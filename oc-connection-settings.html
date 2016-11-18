@@ -1,0 +1,34 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<!--
+`oc-connection-settings`
+Element to manage global connection settings on the Ordercloud platform
+
+@demo demo/index.html 
+-->
+
+<dom-module id="oc-connection-settings">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    <h2>Hello [[prop1]]</h2>
+  </template>
+
+  <script>
+    Polymer({
+
+      is: 'oc-connection-settings',
+
+      properties: {
+        prop1: {
+          type: String,
+          value: 'oc-connection-settings',
+        },
+      },
+
+    });
+  </script>
+</dom-module>
