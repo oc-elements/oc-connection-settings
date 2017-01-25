@@ -3,7 +3,13 @@
   "description": "Element to manage global connection settings on the Ordercloud platform",
   "main": "oc-connection-settings.html",
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.4.0"
+    "polymer": "Polymer/polymer#^1.4.0",
+    "oc-connection-api": "git://github.com/oc-elements/oc-connection-api#1.x",
+    "iron-data-table": "1.0.0",
+    "oc-iron-data-table-styles": "git://github.com/oc-elements/oc-iron-data-table-styles.git#1.x",
+    "oc-paginator": "git://github.com/oc-elements/oc-paginator.git#1.x",
+    "oc-grid-controls": "git://github.com/oc-elements/oc-grid-controls#1.x",
+    "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^1.4.3"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",

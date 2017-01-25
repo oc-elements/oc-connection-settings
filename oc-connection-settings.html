@@ -1,32 +1,162 @@
 <link rel="import" href="../polymer/polymer.html">
 
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../oc-connection-api/oc-connection-api.html">
+<link rel="import" href="../iron-data-table/iron-data-table.html">
+<link rel="import" href="../oc-grid-controls/oc-grid-controls.html">
+<link rel="import" href="../oc-iron-data-table-styles/oc-iron-data-table-styles.html">
+<link rel="import" href="../oc-paginator/mercury-paginator.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../oc-core-utils/oc-api-consumer-behaviour.html">
+
 <!--
 `oc-connection-settings`
 Element to manage global connection settings on the Ordercloud platform
 
-@demo demo/index.html 
+@demo demo/index.html
 -->
+
+<!--todo: API calls-->
+<!--todo: dropdown bindings-->
 
 <dom-module id="oc-connection-settings">
   <template>
     <style>
       :host {
         display: block;
+        padding:10px;
+      }
+
+      paper-material {
+        background: #fff;
+        padding: 10px;
+      }
+
+      iron-data-table {
+        font-size: 14px;
       }
     </style>
-    <h2>Hello [[prop1]]</h2>
+
+    <oc-connection-api id="connectionApi"></oc-connection-api>
+
+    <paper-dropdown-menu label="Connection Types">
+      <paper-listbox class="dropdown-content">
+        <paper-item>Croissant</paper-item>
+        <paper-item>Donut</paper-item>
+        <paper-item>Financier</paper-item>
+        <paper-item>Madeleine</paper-item>
+      </paper-listbox>
+    </paper-dropdown-menu>
+
+    <oc-grid-controls data="[[ _connectionSettings ]]" total-count="[[ _totalItems ]]" num-entries="[[ _pageSize ]]">
+      <iron-data-table
+              id="dataTable"
+              current-page="[[ _currentPage ]]"
+              loading="{{ loading }}">
+        <data-table-column name="ID" sort-by="id" width="20px">
+          <template>[[_computeId( item.toOrganisation, item.fromOrganisation)]]</template>
+        </data-table-column>
+        <data-table-column name="Name" sort-by="name" width="200px">
+          <template>[[_computeName( item.toOrganisation, item.fromOrganisation)]]</template>
+        </data-table-column>
+        <data-table-column name="Organisation Type" sort-by="orgType" width="400px">
+          <template>[[_computeOrgTypes(item.toOrganisation, item.fromOrganisation)]]</template>
+        </data-table-column>
+
+        <data-table-column name="Actions">
+          <template>
+            <div data-option-object$="[[ item ]]" class="actions" >
+              <paper-icon-button id="edit" title="edit setting"  on-tap="_editSetting" icon="create" ></paper-icon-button>
+              <paper-icon-button id="delete" title="delete setting"  on-tap="_deleteSetting" icon="delete" ></paper-icon-button>
+            </div>
+          </template>
+        </data-table-column>
+      </iron-data-table>
+    </oc-grid-controls>
+
+    <paper-dialog id="modal" modal>
+      <h2>New Connection Setting</h2>
+
+      <paper-input label="Setting Name" always-float-label></paper-input>
+
+      <paper-dropdown-menu label="Setting Type">
+        <paper-listbox class="dropdown-content">
+          <paper-item>Croissant</paper-item>
+          <paper-item>Donut</paper-item>
+          <paper-item>Financier</paper-item>
+          <paper-item>Madeleine</paper-item>
+        </paper-listbox>
+      </paper-dropdown-menu>
+
+      <div class="buttons">
+        <paper-button dialog-dismiss raised>Cancel</paper-button>
+        <paper-button dialog-confirm raised>Add New Setting</paper-button>
+      </div>
+    </paper-dialog>
+
+
   </template>
 
   <script>
     Polymer({
 
       is: 'oc-connection-settings',
+      behaviors: [OC.Behaviours.ApiConsumer],
 
       properties: {
-        prop1: {
-          type: String,
-          value: 'oc-connection-settings',
+        organisationId: Number,
+        loading: {
+          type: Boolean,
+          notify: true
         },
+
+        _connectionSettings : Array,
+        _totalItems: Number,
+        _pageSize: Number,
+        _currentPage: Number
+
+      },
+
+      observers : [
+        'refresh(organisationId)'
+      ],
+
+      refresh : function(){
+
+        if(!this.organisationId) return;
+
+        this.loading = true;
+
+//        this._getActiveConnections(this.organisationId, 1, 10);
+
+      },
+
+      _getActiveConnections : function(orgId, page, pageSize){
+
+        var criteria = {};
+        criteria.page = page || 1;
+        criteria.pageSize = pageSize || 10;
+        criteria.statuses = ["CONNECTED"];
+
+        this.$.connectionApi.getConnections(orgId, criteria)
+                .then(function(request){
+                  this._activeConnections = request.response.results;
+                  this._totalItems = request.response.count;
+                  this._pageSize = pageSize;
+                  this._currentPage = page;
+
+                  console.log(this._activeConnections)
+
+                }.bind(this))
+                .catch(this.fire.bind(this, 'delivery-agents-error', 'Failed to load delivery agents'))
+                .finally(this.set.bind(this, 'loading', false));
+      },
+
+      _newConnection : function(e){
+        this.fire('oc-page-to', '/new/');
       },
 
     });
